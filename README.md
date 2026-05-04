@@ -121,7 +121,7 @@ The standard Jellyfin login page gets a small "Sign in with 2FA" button injected
 2. Click **+** and add this URL:
 
 ```
-https://raw.githubusercontent.com/ZL154/JellyfinSecurity/main/manifest.json
+https://raw.githubusercontent.com/glauciocampos/JellyfinSecurity/main/manifest.json
 ```
 
 3. Save and refresh plugins
