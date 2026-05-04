@@ -121,7 +121,7 @@ The standard Jellyfin login page gets a small "Sign in with 2FA" button injected
 2. Click **+** and add this URL:
 
 ```
-https://raw.githubusercontent.com/ZL154/JellyfinSecurity/main/manifest.json
+https://raw.githubusercontent.com/glauciocampos/JellyfinSecurity/main/manifest.json
 ```
 
 3. Save and refresh plugins
@@ -137,19 +137,25 @@ https://raw.githubusercontent.com/ZL154/JellyfinSecurity/main/manifest.json
 
 ```bash
 # Linux/macOS
-chmod +x build.sh && ./build.sh --install
+chmod +x build.sh
+./build.sh fat
+# opcional: instalar o pacote gerado localmente
+./build.sh fat --install
 ```
 
 ### Manual install
 
-Copy these 4 files into `<jellyfin-data>/plugins/TwoFactorAuth/`:
+Copy the full folder into `<jellyfin-data>/plugins/TwoFactorAuth/`:
 
 ```
 TwoFactorAuth/
+├── *.dll
+├── *.so
 ├── meta.json
-├── Jellyfin.Plugin.TwoFactorAuth.dll
-├── Otp.NET.dll
-└── QRCoder.dll
+└── runtimes/
+    ├── linux-x64/native/*.so
+    ├── linux-arm64/native/*.so
+    └── linux-musl-x64/native/*.so
 ```
 
 Plugin directories by OS:
@@ -158,6 +164,14 @@ Plugin directories by OS:
 - **Windows:** `%LOCALAPPDATA%\jellyfin\plugins\TwoFactorAuth\`
 
 Restart Jellyfin after copying.
+
+---
+
+## 🤝 Credits
+
+- Projeto original: **ZL154 / JellyfinSecurity**
+- Mantenedores e contribuidores do projeto original
+- Este repositório é um fork de manutenção/empacotamento (multi-arquitetura)
 
 ---
 
