@@ -166,6 +166,14 @@ Restart Jellyfin after copying.
 
 ---
 
+## 🤝 Credits
+
+- Projeto original: **ZL154 / JellyfinSecurity**
+- Mantenedores e contribuidores do projeto original
+- Este repositório é um fork de manutenção/empacotamento (multi-arquitetura)
+
+---
+
 ## 🚀 First-time setup
 
 ### As an admin
