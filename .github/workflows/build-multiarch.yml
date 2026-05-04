@@ -1,0 +1,35 @@
+name: Build Plugin
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ "v*" ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build fat package in Docker
+        run: |
+          docker run --rm \
+            -v "$PWD:/src" \
+            -w /src \
+            mcr.microsoft.com/dotnet/sdk:9.0 \
+            bash -lc "./build.sh fat"
+
+      - name: Zip package
+        run: |
+          VERSION="$(grep -oPm1 '(?<=<Version>)[^<]+' src/Jellyfin.Plugin.TwoFactorAuth/Jellyfin.Plugin.TwoFactorAuth.csproj)"
+          cd dist
+          zip -r "Jellyfin.Plugin.TwoFactorAuthv${VERSION}.zip" "TwoFactorAuth"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jellyfin-security-fat-package
+          path: dist/Jellyfin.Plugin.TwoFactorAuthv*.zip

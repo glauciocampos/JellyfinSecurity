@@ -137,19 +137,24 @@ https://raw.githubusercontent.com/ZL154/JellyfinSecurity/main/manifest.json
 
 ```bash
 # Linux/macOS
-chmod +x build.sh && ./build.sh --install
+chmod +x build.sh
+./build.sh fat
+# opcional: instalar o pacote gerado localmente
+./build.sh fat --install
 ```
 
 ### Manual install
 
-Copy these 4 files into `<jellyfin-data>/plugins/TwoFactorAuth/`:
+Copy the full folder into `<jellyfin-data>/plugins/TwoFactorAuth/`:
 
 ```
 TwoFactorAuth/
+├── *.dll
 ├── meta.json
-├── Jellyfin.Plugin.TwoFactorAuth.dll
-├── Otp.NET.dll
-└── QRCoder.dll
+└── runtimes/
+    ├── linux-x64/native/*.so
+    ├── linux-arm64/native/*.so
+    └── linux-musl-x64/native/*.so
 ```
 
 Plugin directories by OS:
