@@ -58,10 +58,14 @@ for RID in "${RIDS[@]}"; do
     fi
 
     NATIVE_DIR="$PUBLISH_DIR/runtimes/$RID/native"
+    TARGET_NATIVE_DIR="$OUTPUT_DIR/runtimes/$RID/native"
+    mkdir -p "$TARGET_NATIVE_DIR"
+
+    # Some packages place native libs under runtimes/<rid>/native, others at publish root.
     if [ -d "$NATIVE_DIR" ]; then
-        mkdir -p "$OUTPUT_DIR/runtimes/$RID/native"
-        cp "$NATIVE_DIR"/* "$OUTPUT_DIR/runtimes/$RID/native/" 2>/dev/null || true
+        cp "$NATIVE_DIR"/* "$TARGET_NATIVE_DIR/" 2>/dev/null || true
     fi
+    cp "$PUBLISH_DIR"/*.so "$TARGET_NATIVE_DIR/" 2>/dev/null || true
 done
 
 # Copy meta.json
