@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Plugin.TwoFactorAuth.Models;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Entities;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Logging;
 
@@ -280,7 +281,7 @@ public class OidcService
     /// <summary>Try to find a Jellyfin user matching the IdP claims. Order:
     /// (1) existing SsoLink, (2) email match against UserEmails config,
     /// (3) auto-create if provider allows.</summary>
-    private async Task<Jellyfin.Database.Implementations.Entities.User?> ResolveUserAsync(OidcProvider provider, ClaimsBundle claims)
+    private async Task<User?> ResolveUserAsync(OidcProvider provider, ClaimsBundle claims)
     {
         // 1. Existing link by sub
         var allUsers = await _store.GetAllUsersAsync().ConfigureAwait(false);
