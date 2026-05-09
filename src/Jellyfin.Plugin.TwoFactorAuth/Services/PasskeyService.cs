@@ -81,6 +81,11 @@ public class PasskeyService
             }
         }
 
+        if (config?.ForceHttps == true)
+        {
+            scheme = "https";
+        }
+
         var rpId = !string.IsNullOrWhiteSpace(config?.WebAuthnRpId)
             ? config.WebAuthnRpId!
             : host;

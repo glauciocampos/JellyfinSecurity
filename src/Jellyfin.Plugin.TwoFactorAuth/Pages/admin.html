@@ -312,6 +312,9 @@
                             <div class="tfa-row" style="margin-top:12px;">
                                 <label><input type="checkbox" id="cfgTrustFwd" is="emby-checkbox" /> <span>Trust X-Forwarded-For (for reverse proxies)</span></label>
                             </div>
+                            <div class="tfa-row">
+                                <label><input type="checkbox" id="cfgForceHttps" is="emby-checkbox" /> <span>Force HTTPS for redirect URIs (OIDC/Passkeys)</span></label>
+                            </div>
                             <div style="margin-top:12px;">
                                 <label style="font-size:13px;color:#888;">Trusted proxy CIDRs (one per line)</label>
                                 <textarea id="cfgProxyCidrs" class="tfa-input"></textarea>
@@ -979,6 +982,7 @@
                         page.querySelector('#cfgLanCidrs').value = (c.LanBypassCidrs || []).join('\n');
                         page.querySelector('#cfgTrustFwd').checked = !!c.TrustForwardedFor;
                         page.querySelector('#cfgProxyCidrs').value = (c.TrustedProxyCidrs || []).join('\n');
+                        page.querySelector('#cfgForceHttps').checked = !!c.ForceHttps;
                         page.querySelector('#cfgMaxFail').value = c.MaxFailedAttempts || 5;
                         page.querySelector('#cfgLockoutMin').value = c.LockoutDurationMinutes || 15;
                         page.querySelector('#cfgAuditMax').value = c.AuditLogMaxEntries || 1000;
@@ -1040,6 +1044,7 @@
                         c.LanBypassCidrs = page.querySelector('#cfgLanCidrs').value.split('\n').map(function(s){return s.trim();}).filter(Boolean);
                         c.TrustForwardedFor = page.querySelector('#cfgTrustFwd').checked;
                         c.TrustedProxyCidrs = page.querySelector('#cfgProxyCidrs').value.split('\n').map(function(s){return s.trim();}).filter(Boolean);
+                        c.ForceHttps = page.querySelector('#cfgForceHttps').checked;
                         c.MaxFailedAttempts = parseInt(page.querySelector('#cfgMaxFail').value) || 5;
                         c.LockoutDurationMinutes = parseInt(page.querySelector('#cfgLockoutMin').value) || 15;
                         c.AuditLogMaxEntries = parseInt(page.querySelector('#cfgAuditMax').value) || 1000;
