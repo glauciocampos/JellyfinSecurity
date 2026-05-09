@@ -406,6 +406,12 @@ public class SecurityController : ControllerBase
             scheme = Request.Scheme;
             host = Request.Host.ToString();
         }
+
+        if (cfg?.ForceHttps == true)
+        {
+            scheme = "https";
+        }
+
         return $"{scheme}://{host}/TwoFactorAuth/Oidc/Callback/{providerId}";
     }
 

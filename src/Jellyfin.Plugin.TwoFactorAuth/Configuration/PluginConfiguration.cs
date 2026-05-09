@@ -31,6 +31,8 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public string[] TrustedProxyCidrs { get; set; } = Array.Empty<string>();
 
+    public bool ForceHttps { get; set; } = false;
+
     public bool EmailOtpEnabled { get; set; } = true;
 
     public int EmailOtpTtlSeconds { get; set; } = 300;
