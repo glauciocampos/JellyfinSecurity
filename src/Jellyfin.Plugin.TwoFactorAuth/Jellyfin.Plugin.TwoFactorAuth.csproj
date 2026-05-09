@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>2.1.0.4</Version>
+    <Version>2.1.0.5</Version>
     <AssemblyVersion>2.1.0.2</AssemblyVersion>
     <FileVersion>2.1.0.2</FileVersion>
   </PropertyGroup>

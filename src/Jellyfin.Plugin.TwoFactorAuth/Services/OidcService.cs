@@ -11,7 +11,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Plugin.TwoFactorAuth.Models;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Entities;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Logging;
 
@@ -258,11 +257,24 @@ public class OidcService
                 }
             }
 
-            if (shouldBeAdmin && !matchedUser.Policy.IsAdministrator)
+            if (shouldBeAdmin)
             {
-                matchedUser.Policy.IsAdministrator = true;
-                changed = true;
-                _logger.LogInformation("[2FA] Elevated {User} to Administrator via OIDC match", matchedUser.Username);
+                // Use dynamic to avoid compilation errors with changing User/Policy namespaces in 10.11.x.
+                // At runtime, the User object in Jellyfin 10.11.x has a Policy property with IsAdministrator.
+                dynamic dUser = matchedUser;
+                try
+                {
+                    if (!dUser.Policy.IsAdministrator)
+                    {
+                        dUser.Policy.IsAdministrator = true;
+                        changed = true;
+                        _logger.LogInformation("[2FA] Elevated {User} to Administrator via OIDC match", matchedUser.Username);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "[2FA] Could not check/set IsAdministrator via dynamic Policy");
+                }
             }
 
             if (changed)
@@ -281,7 +293,7 @@ public class OidcService
     /// <summary>Try to find a Jellyfin user matching the IdP claims. Order:
     /// (1) existing SsoLink, (2) email match against UserEmails config,
     /// (3) auto-create if provider allows.</summary>
-    private async Task<User?> ResolveUserAsync(OidcProvider provider, ClaimsBundle claims)
+    public async Task<Jellyfin.Data.Entities.User?> ResolveUserAsync(OidcProvider provider, ClaimsBundle claims)
     {
         // 1. Existing link by sub
         var allUsers = await _store.GetAllUsersAsync().ConfigureAwait(false);
@@ -329,13 +341,53 @@ public class OidcService
         return null;
     }
 
-    private record ClaimsBundle(
+    public record ClaimsBundle(
         string Subject,
         string Email,
         bool EmailVerified,
         string Username,
         string[] Groups,
         string[] Amr);
+
+    public async Task<ClaimsBundle> ValidateExternalIdTokenAsync(OidcProvider provider, string idToken)
+    {
+        var disc = await GetDiscoveryAsync(provider).ConfigureAwait(false);
+        var jwks = await GetJwksAsync(provider, disc).ConfigureAwait(false);
+        var handler = new JwtSecurityTokenHandler();
+        var validationParams = new TokenValidationParameters
+        {
+            ValidIssuer = disc.Issuer,
+            ValidateIssuer = true,
+            ValidAudience = provider.ClientId,
+            ValidateAudience = true,
+            IssuerSigningKeys = jwks.GetSigningKeys(),
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(5), // Relaxed for native apps
+        };
+        handler.ValidateToken(idToken, validationParams, out var validated);
+        var jwt = (JwtSecurityToken)validated;
+
+        var sub = jwt.Subject;
+        var email = jwt.Claims.FirstOrDefault(c => c.Type == "email")?.Value ?? string.Empty;
+        var emailVerified = jwt.Claims.FirstOrDefault(c => c.Type == "email_verified")?.Value == "true"
+            || jwt.Claims.Any(c => c.Type == "email" && !string.IsNullOrEmpty(c.Value)); // Entra ID often doesn't send email_verified but we trust it if email is present
+        
+        var username = jwt.Claims.FirstOrDefault(c => c.Type == provider.UsernameClaim)?.Value
+            ?? jwt.Claims.FirstOrDefault(c => c.Type == "preferred_username")?.Value
+            ?? (email.Contains('@') ? email.Split('@')[0] : email);
+
+        var groups = jwt.Claims
+            .Where(c => c.Type == "groups" || c.Type == "roles")
+            .SelectMany(c => c.Value.Contains(',') ? c.Value.Split(',') : new[] { c.Value })
+            .Select(s => s.Trim())
+            .Where(s => s.Length > 0)
+            .ToArray();
+
+        var amr = jwt.Claims.Where(c => c.Type == "amr").Select(c => c.Value).ToArray();
+
+        return new ClaimsBundle(sub, email, emailVerified, username, groups, amr);
+    }
 
     private async Task<ClaimsBundle> VerifyIdTokenAsync(OidcProvider provider, Discovery disc, string idToken, string expectedNonce)
     {

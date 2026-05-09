@@ -95,21 +95,76 @@ public class SecurityController : ControllerBase
     /// <summary>Buttons-only listing for the un-authenticated login page.
     /// Returns ONLY id + display name + enabled flag for enabled providers
     /// — never client_id, secret, discovery URL, group lists, or any other
-    /// admin-only field. The login-page inject.js reads this to render
     /// "Sign in with X" buttons.</summary>
     [HttpGet("Oidc/PublicProviders")]
     [AllowAnonymous]
     public ActionResult<IReadOnlyList<object>> GetPublicProviders()
     {
         var config = Plugin.Instance?.Configuration;
-        if (config is null) return Ok(Array.Empty<object>());
-        var safe = config.OidcProviders.Where(p => p.Enabled).Select(p => new
+        if (config == null) return Ok(Array.Empty<object>());
+
+        return Ok(config.OidcProviders
+            .Where(p => p.Enabled)
+            .Select(p => new
+            {
+                id = p.Id,
+                displayName = p.DisplayName,
+                preset = p.Preset
+            })
+            .ToList());
+    }
+
+    public class ExchangeTokenRequest
+    {
+        [Required] public string ProviderId { get; set; } = string.Empty;
+        [Required] public string IdToken { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// POST /TwoFactorAuth/Oidc/ExchangeToken
+    /// Allows native apps (like Noctiluca) to exchange a validated IdP id_token
+    /// for a Jellyfin bridge token.
+    /// </summary>
+    [HttpPost("Oidc/ExchangeToken")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ExchangeToken([FromBody] ExchangeTokenRequest req)
+    {
+        try
         {
-            id = p.Id,
-            displayName = p.DisplayName,
-            enabled = true,
-        }).ToList<object>();
-        return Ok(safe);
+            var config = Plugin.Instance?.Configuration;
+            var provider = config?.OidcProviders.FirstOrDefault(p => p.Id == req.ProviderId);
+            if (provider == null || !provider.Enabled)
+            {
+                return BadRequest(new { message = "Provider not found or disabled" });
+            }
+
+            // 1. Validate ID Token (signature, issuer, audience)
+            var claims = await _oidc.ValidateExternalIdTokenAsync(provider, req.IdToken).ConfigureAwait(false);
+
+            // 2. Resolve Jellyfin User (by sub, email, or auto-create)
+            var matchedUser = await _oidc.ResolveUserAsync(provider, claims).ConfigureAwait(false);
+            if (matchedUser == null)
+            {
+                return Unauthorized(new { message = "No Jellyfin user matched the IdP identity" });
+            }
+
+            // 3. Mint Bridge Token (valid for 60s, single use)
+            var bridgeToken = _oidcBridge.Mint(provider.Id, matchedUser.Id);
+
+            _logger.LogInformation("[2FA] OIDC Token Exchange success for {User} via {Pid}", 
+                matchedUser.Username, provider.Id);
+
+            return Ok(new
+            {
+                username = matchedUser.Username,
+                token = bridgeToken
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "[2FA] OIDC Token Exchange failed");
+            return Unauthorized(new { message = "Token exchange failed: " + ex.Message });
+        }
     }
 
     [HttpGet("Oidc/Providers")]
