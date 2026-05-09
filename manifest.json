@@ -4,21 +4,21 @@
     "name": "Jellyfin Security",
     "description": "Comprehensive Jellyfin security: TOTP & email 2FA, passkeys, OIDC/SSO sign-in (Google, Microsoft, Apple, Authelia, Authentik, Keycloak, PocketID, Cloudflare Access, ...), brute-force IP banning, impossible-travel detection, per-user IP allowlist, device pairing, trusted browsers, and audit log.",
     "overview": "Comprehensive Jellyfin security: 2FA, passkeys, OIDC/SSO, brute-force protection, impossible-travel detection, IP allowlist, and audit logging.",
-    "owner": "glauciocampos",
+    "owner": "glauciolabs",
     "category": "General",
     "versions": [
       {
         "version": "2.1.0.2",
         "changelog": "v2.1.0.2 — NEW: 'Force HTTPS' option in Settings for OIDC and Passkeys. Ensures redirect URIs always use the correct scheme when behind a reverse proxy that communicates with Jellyfin over HTTP. Fixes 'redirect_uri mismatch' errors with providers like Microsoft Entra ID.",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/glauciocampos/JellyfinSecurity/releases/download/v2.1.0/Jellyfin.Plugin.TwoFactorAuthv2.1.0.2.zip",
+        "sourceUrl": "https://github.com/glauciolabs/JellyfinSecurity/releases/download/v2.1.0/Jellyfin.Plugin.TwoFactorAuthv2.1.0.2.zip",
         "checksum": "B601AF9BC6F7270FDB63F53B702E8FEA"
       },
       {
         "version": "2.1.0.1",
         "changelog": "v2.1.0.1 — fork patch release: multi-architecture packaging fix for container deployments. Managed assemblies are published without RID, and native dependencies are bundled per RID and copied to plugin root for QuestPDF probing.",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/glauciocampos/JellyfinSecurity/releases/download/v2.1.0/Jellyfin.Plugin.TwoFactorAuthv2.1.0.1.zip",
+        "sourceUrl": "https://github.com/glauciolabs/JellyfinSecurity/releases/download/v2.1.0/Jellyfin.Plugin.TwoFactorAuthv2.1.0.1.zip",
         "checksum": "42BBA1AE9878BEDAD490A3FE99F42806"
       },
       {
