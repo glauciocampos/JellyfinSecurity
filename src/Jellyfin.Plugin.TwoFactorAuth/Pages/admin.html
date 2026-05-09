@@ -247,6 +247,10 @@
                                 <input type="text" id="ssoAdminGroups" class="tfa-input" style="width:360px;" />
                             </div>
                             <div class="tfa-row">
+                                <label>Admin users (emails or GUIDs, comma-separated, optional)</label>
+                                <input type="text" id="ssoAdminUsers" class="tfa-input" style="width:360px;" />
+                            </div>
+                            <div class="tfa-row">
                                 <label><input type="checkbox" id="ssoAutoCreate" is="emby-checkbox" /> <span>Auto-create Jellyfin users on first sign-in (only enable for trusted IdPs)</span></label>
                             </div>
                             <div class="tfa-row">
@@ -1146,7 +1150,8 @@
                     page.querySelector('#ssoUsernameClaim').value = prov ? (prov.usernameClaim || 'preferred_username') : 'preferred_username';
                     page.querySelector('#ssoAcr').value = prov ? (prov.acrValues || '') : '';
                     page.querySelector('#ssoAllowedGroups').value = prov ? (prov.allowedGroups || '') : '';
-                    page.querySelector('#ssoAdminGroups').value = prov ? (prov.adminGroups || '') : '';
+                    page.querySelector('#ssoAdminGroups').value = prov ? (prov.AdminGroups || prov.adminGroups || '') : '';
+                    page.querySelector('#ssoAdminUsers').value = prov ? (prov.AdminUsers || prov.adminUsers || '') : '';
                     page.querySelector('#ssoAutoCreate').checked = prov ? !!prov.autoCreateUsers : false;
                     page.querySelector('#ssoRequireMfa').checked = prov ? !!prov.requireIdpMfa : false;
                     page.querySelector('#ssoBypass2fa').checked = prov ? prov.bypassPluginTwoFa !== false : true;
@@ -1194,6 +1199,7 @@
                         AcrValues: page.querySelector('#ssoAcr').value.trim(),
                         AllowedGroups: page.querySelector('#ssoAllowedGroups').value.trim(),
                         AdminGroups: page.querySelector('#ssoAdminGroups').value.trim(),
+                        AdminUsers: page.querySelector('#ssoAdminUsers').value.trim(),
                         AutoCreateUsers: page.querySelector('#ssoAutoCreate').checked,
                         RequireIdpMfa: page.querySelector('#ssoRequireMfa').checked,
                         BypassPluginTwoFa: page.querySelector('#ssoBypass2fa').checked,

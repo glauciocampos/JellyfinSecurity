@@ -59,6 +59,10 @@ public class OidcProvider
     /// to grant Jellyfin admin. Comma-separated. Otherwise no admin elevation.</summary>
     public string AdminGroups { get; set; } = string.Empty;
 
+    /// <summary>If non-empty, sign-in grants Jellyfin admin if the user's email
+    /// or subject (GUID) matches any entry here. Comma-separated.</summary>
+    public string AdminUsers { get; set; } = string.Empty;
+
     /// <summary>Auto-create a new Jellyfin user on first sign-in if the
     /// IdP-returned identity isn't linked yet. Default false (admin must
     /// pre-create users and let them link). Enabling this on a public-facing

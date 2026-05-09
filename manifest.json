@@ -8,6 +8,13 @@
     "category": "General",
     "versions": [
       {
+        "version": "2.1.0.3",
+        "changelog": "v2.1.0.3 — NEW: 'Admin Users' field for OIDC providers. Allows promoting specific users (by email or GUID) to Jellyfin Administrator on first sign-in. Fixed 'Admin Groups' promotion logic which was missing implementation.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/glauciolabs/JellyfinSecurity/releases/download/v2.1.0/Jellyfin.Plugin.TwoFactorAuthv2.1.0.3.zip",
+        "checksum": "PLACEHOLDER"
+      },
+      {
         "version": "2.1.0.2",
         "changelog": "v2.1.0.2 — NEW: 'Force HTTPS' option in Settings for OIDC and Passkeys. Ensures redirect URIs always use the correct scheme when behind a reverse proxy that communicates with Jellyfin over HTTP. Fixes 'redirect_uri mismatch' errors with providers like Microsoft Entra ID.",
         "targetAbi": "10.11.0.0",

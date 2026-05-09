@@ -229,16 +229,49 @@ public class OidcService
         try
         {
             var ourProviderId = typeof(TwoFactorAuthProvider).FullName!;
+            var changed = false;
+
             if (!string.Equals(matchedUser.AuthenticationProviderId, ourProviderId, StringComparison.Ordinal))
             {
                 matchedUser.AuthenticationProviderId = ourProviderId;
-                await _userManager.UpdateUserAsync(matchedUser).ConfigureAwait(false);
+                changed = true;
                 _logger.LogInformation("[2FA] Reassigned {User} AuthenticationProviderId to TwoFactorAuthProvider for OIDC bridge", matchedUser.Username);
+            }
+
+            // Optional: elevate to Jellyfin administrator based on groups or specific users.
+            var shouldBeAdmin = false;
+            if (!string.IsNullOrWhiteSpace(provider.AdminGroups))
+            {
+                var admins = provider.AdminGroups.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                if (claims.Groups.Any(g => admins.Any(a => a.Equals(g, StringComparison.OrdinalIgnoreCase))))
+                {
+                    shouldBeAdmin = true;
+                }
+            }
+            if (!shouldBeAdmin && !string.IsNullOrWhiteSpace(provider.AdminUsers))
+            {
+                var admins = provider.AdminUsers.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                if (admins.Any(a => a.Equals(claims.Email, StringComparison.OrdinalIgnoreCase) || a.Equals(claims.Subject, StringComparison.OrdinalIgnoreCase)))
+                {
+                    shouldBeAdmin = true;
+                }
+            }
+
+            if (shouldBeAdmin && !matchedUser.Policy.IsAdministrator)
+            {
+                matchedUser.Policy.IsAdministrator = true;
+                changed = true;
+                _logger.LogInformation("[2FA] Elevated {User} to Administrator via OIDC match", matchedUser.Username);
+            }
+
+            if (changed)
+            {
+                await _userManager.UpdateUserAsync(matchedUser).ConfigureAwait(false);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "[2FA] Could not reassign AuthenticationProviderId for {User}", matchedUser.Username);
+            _logger.LogWarning(ex, "[2FA] Could not update user properties for {User}", matchedUser.Username);
         }
 
         return new CallbackResult(true, null, matchedUser.Id, matchedUser.Username, pending.ReturnUrl, link);
